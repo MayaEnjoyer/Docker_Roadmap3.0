@@ -21,14 +21,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Use Node.js 20 (with cache)
+        if: ${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') != '' }}
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: |
+            **/package-lock.json
+            **/npm-shrinkwrap.json
+            **/yarn.lock
 
-      - name: Install deps
-        run: npm ci
+      - name: Use Node.js 20
+        if: ${{ hashFiles('**/package-lock.json', '**/npm-shrinkwrap.json', '**/yarn.lock') == '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps (npm ci)
+        if: ${{ hashFiles('**/package-lock.json') != '' }}
+        run: npm ci --no-audit --no-fund
+
+      - name: Install deps (npm install)
+        if: ${{ hashFiles('**/package-lock.json') == '' }}
+        run: npm install --no-audit --no-fund
 
       - name: Build
         run: npm run build
@@ -44,6 +60,9 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
