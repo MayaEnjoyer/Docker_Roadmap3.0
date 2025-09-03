@@ -1,43 +1,48 @@
-name: Deploy to GitHub Pages
-
+name: build-and-deploy
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./docker-roadmap
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache-dependency-path: package-lock.json  
+          cache: npm
+          cache-dependency-path: ./docker-roadmap/package-lock.json
 
-      - run: npm install 
-      - run: npm run build
+      - name: Check where we are
+        run: pwd && ls -la
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: ./docker-roadmap/dist
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
