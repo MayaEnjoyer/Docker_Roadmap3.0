@@ -1,16 +1,8 @@
-// src/App.tsx
 import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 
-/* =========================================
-   Helpers
-   ========================================= */
-// Uses exact filenames like "p22_run.png", "p102_cgroups.png" etc.
 const img = (key: string) => `${import.meta.env.BASE_URL ?? "/"}photos/${key}.png`;
 
-/* =========================================
-   Content model
-   ========================================= */
 export type Resource = { label: string; url: string };
 
 export type CodeSpec = {
@@ -38,11 +30,7 @@ export type Item = {
 
 export type Group = { id: string; title: string; items: Item[] };
 
-/* =========================================
-   CONTENT — photos in *exact* sequence you gave
-   ========================================= */
 const groups: Group[] = [
-    /* ----------------------------- 1) BASICS ----------------------------- */
     {
         id: "basics",
         title: "1) Basics & Why Docker",
@@ -92,6 +80,16 @@ const groups: Group[] = [
                             "Hidden runtime assumptions: Dockerfile documents the runtime contract.",
                             "Patch strategy: rebuild → retag → redeploy beats manual in-place patching."
                         ]
+                    },
+                    {
+                        kind: "links",
+                        title: "Further reading",
+                        items: [
+                            { label: "Docker overview", url: "https://docs.docker.com/get-started/overview/" },
+                            { label: "Images, containers, layers", url: "https://docs.docker.com/build/guide/layers/" },
+                            { label: "Linux namespaces (man7)", url: "https://man7.org/linux/man-pages/man7/namespaces.7.html" },
+                            { label: "Resource limits (cgroups) in Docker", url: "https://docs.docker.com/config/containers/resource_constraints/" }
+                        ]
                     }
                 ]
             },
@@ -136,13 +134,20 @@ const groups: Group[] = [
                         body:
                             "Prefer VMs for strong kernel isolation boundaries, legacy OS-level dependencies, or when you must run different kernels. " +
                             "Prefer containers for cloud-native apps, microservices, and CI tasks that benefit from fast start/stop and high density."
+                    },
+                    {
+                        kind: "links",
+                        title: "Further reading",
+                        items: [
+                            { label: "What is a container", url: "https://docs.docker.com/get-started/overview/#what-is-a-container" },
+                            { label: "Container vs VM (Docker docs)", url: "https://docs.docker.com/get-started/overview/#containers-and-virtual-machines" }
+                        ]
                     }
                 ]
             }
         ]
     },
 
-    /* ------------------- 2) WORKING WITH CONTAINERS (CORE) ------------------- */
     {
         id: "work",
         title: "2) Working with Containers",
@@ -266,6 +271,17 @@ const groups: Group[] = [
                                 "docker rm $(docker ps -aq) 2>/dev/null || true"
                             ]
                         }
+                    },
+                    {
+                        kind: "links",
+                        title: "CLI reference",
+                        items: [
+                            { label: "docker run", url: "https://docs.docker.com/reference/cli/docker/container/run/" },
+                            { label: "docker ps", url: "https://docs.docker.com/reference/cli/docker/container/ps/" },
+                            { label: "docker exec", url: "https://docs.docker.com/reference/cli/docker/container/exec/" },
+                            { label: "docker logs", url: "https://docs.docker.com/reference/cli/docker/container/logs/" },
+                            { label: "docker images / rmi", url: "https://docs.docker.com/reference/cli/docker/image/ls/" }
+                        ]
                     }
                 ]
             },
@@ -320,13 +336,22 @@ const groups: Group[] = [
                         body:
                             "`docker logs` tails the JSON-file log by default. In production you may use driver integrations (journald, syslog, fluentd). " +
                             "Add structured logging and sensible rotation. Remember that logs are best treated as an event stream shipped to a central sink."
+                    },
+                    {
+                        kind: "links",
+                        title: "Docs & guides",
+                        items: [
+                            { label: "Published ports", url: "https://docs.docker.com/network/#published-ports" },
+                            { label: "Volumes", url: "https://docs.docker.com/storage/volumes/" },
+                            { label: "Bind mounts", url: "https://docs.docker.com/storage/bind-mounts/" },
+                            { label: "docker inspect", url: "https://docs.docker.com/reference/cli/docker/inspect/" }
+                        ]
                     }
                 ]
             }
         ]
     },
 
-    /* ------------------------- 3) ENVIRONMENT VARIABLES ------------------------ */
     {
         id: "env",
         title: "3) Environment Variables",
@@ -371,13 +396,21 @@ const groups: Group[] = [
                                 "# Good practice: keep secrets out of images; use runtime mounts or orchestrator secrets"
                             ]
                         }
+                    },
+                    {
+                        kind: "links",
+                        title: "ENV & Compose",
+                        items: [
+                            { label: "Dockerfile: ENV", url: "https://docs.docker.com/reference/dockerfile/#env" },
+                            { label: "Compose: environment", url: "https://docs.docker.com/compose/compose-file/05-services/#environment" },
+                            { label: "Compose: env_file", url: "https://docs.docker.com/compose/compose-file/05-services/#env_file" }
+                        ]
                     }
                 ]
             }
         ]
     },
 
-    /* ------------------------------- 4) NETWORKING ------------------------------ */
     {
         id: "networking",
         title: "4) Networking — Default & User-Defined",
@@ -416,13 +449,21 @@ const groups: Group[] = [
                         body:
                             "Docker runs a small DNS server at 127.0.0.11 on user-defined bridges. Containers can resolve each other by container name or Compose service name. " +
                             "This eliminates fragile hard-coded IPs and simplifies multi-service dev environments. Combine with healthchecks so dependencies are not just reachable, but healthy."
+                    },
+                    {
+                        kind: "links",
+                        title: "Networking docs",
+                        items: [
+                            { label: "Networking overview", url: "https://docs.docker.com/network/" },
+                            { label: "Bridge networks", url: "https://docs.docker.com/network/bridge/" },
+                            { label: "Embedded DNS", url: "https://docs.docker.com/network/bridge/#use-the-default-bridge-network" }
+                        ]
                     }
                 ]
             }
         ]
     },
 
-    /* ----------------------- 5) COMPOSE & MULTI-CONTAINER APPS ---------------------- */
     {
         id: "compose",
         title: "5) Compose & Multi-Container Apps",
@@ -488,13 +529,22 @@ const groups: Group[] = [
                             "Split files into base + overrides (local dev, CI, prod).",
                             "Document exposed ports and env variables in README to reduce friction."
                         ]
+                    },
+                    {
+                        kind: "links",
+                        title: "Compose reference",
+                        items: [
+                            { label: "Compose overview", url: "https://docs.docker.com/compose/" },
+                            { label: "Compose file reference", url: "https://docs.docker.com/compose/compose-file/" },
+                            { label: "build vs image", url: "https://docs.docker.com/compose/compose-file/05-services/#build" },
+                            { label: "depends_on & healthcheck", url: "https://docs.docker.com/compose/compose-file/05-services/#depends_on" }
+                        ]
                     }
                 ]
             }
         ]
     },
 
-    /* ---------------------------- 6) REGISTRIES & HUB ---------------------------- */
     {
         id: "registry",
         title: "6) Registries & Distribution",
@@ -540,13 +590,21 @@ const groups: Group[] = [
                             "Enable vulnerability scanning and sign images where possible.",
                             "Scope registry credentials tightly; rotate tokens regularly."
                         ]
+                    },
+                    {
+                        kind: "links",
+                        title: "Hub & private registry",
+                        items: [
+                            { label: "Docker Hub", url: "https://docs.docker.com/docker-hub/" },
+                            { label: "Private registry (registry:2)", url: "https://docs.docker.com/registry/" },
+                            { label: "Login / Tag / Push", url: "https://docs.docker.com/reference/cli/docker/login/" }
+                        ]
                     }
                 ]
             }
         ]
     },
 
-    /* ----------------------------- 7) ENGINE & DESKTOP ---------------------------- */
     {
         id: "engine",
         title: "7) Engine & OS Integration",
@@ -565,6 +623,14 @@ const groups: Group[] = [
                         body:
                             "The Docker client issues commands to the Docker Engine (daemon) over a local Unix socket or TCP (`-H`). The daemon manages images, containers, networks, and volumes; " +
                             "it implements the REST API consumed by the CLI and SDKs. Container runtime interfaces (runc/CRI-O) execute the low-level steps of creating namespaces, setting cgroups, and launching the process."
+                    },
+                    {
+                        kind: "links",
+                        title: "Engine internals",
+                        items: [
+                            { label: "Docker Engine", url: "https://docs.docker.com/engine/" },
+                            { label: "Engine REST API", url: "https://docs.docker.com/engine/api/latest/" }
+                        ]
                     }
                 ]
             },
@@ -582,6 +648,13 @@ const groups: Group[] = [
                         body:
                             "Each container gets its own process tree (PID), mount namespace (filesystem view), network stack, and hostname, which isolates what a process can see and affect. " +
                             "User namespaces can remap root in the container to an unprivileged user on the host for defense-in-depth."
+                    },
+                    {
+                        kind: "links",
+                        title: "Namespaces",
+                        items: [
+                            { label: "Linux namespaces (man7)", url: "https://man7.org/linux/man-pages/man7/namespaces.7.html" }
+                        ]
                     }
                 ]
             },
@@ -608,6 +681,13 @@ const groups: Group[] = [
                                 "docker run --rm --cpus 0.5 --memory 256m --memory-swap 256m alpine:3.20 sh -c 'yes | head -n 100000'"
                             ]
                         }
+                    },
+                    {
+                        kind: "links",
+                        title: "Resource limits",
+                        items: [
+                            { label: "Resource constraints", url: "https://docs.docker.com/config/containers/resource_constraints/" }
+                        ]
                     }
                 ]
             },
@@ -624,6 +704,13 @@ const groups: Group[] = [
                         body:
                             "PID 1 has special signal semantics and is responsible for reaping zombies. For multi-process workloads use a tiny init (tini/s6) or a supervisor so signals are handled and children are reaped. " +
                             "If your app expects SIGTERM for graceful shutdown, ensure your base image or entrypoint forwards it."
+                    },
+                    {
+                        kind: "links",
+                        title: "PID 1 & init",
+                        items: [
+                            { label: "docker run --init", url: "https://docs.docker.com/reference/cli/docker/container/run/#init" }
+                        ]
                     }
                 ]
             },
@@ -653,13 +740,21 @@ const groups: Group[] = [
                             "On macOS/Windows, containers run inside a VM. Bind mounts traverse the VM boundary — avoid mapping huge trees with many small files; prefer named volumes for heavy I/O. " +
                             "Allocate adequate CPU/RAM to the Docker Desktop VM and consider file-sync tools (e.g., Mutagen) for large codebases. " +
                             "Keep file watchers under control to avoid thrashing (e.g., ignore `node_modules` when possible)."
+                    },
+                    {
+                        kind: "links",
+                        title: "Desktop",
+                        items: [
+                            { label: "Docker Desktop for Windows", url: "https://docs.docker.com/desktop/windows/" },
+                            { label: "WSL 2 backend", url: "https://docs.docker.com/desktop/wsl/" },
+                            { label: "Docker Desktop for Mac", url: "https://docs.docker.com/desktop/mac/" }
+                        ]
                     }
                 ]
             }
         ]
     },
 
-    /* ----------------------------- 8) ORCHESTRATION ----------------------------- */
     {
         id: "orchestration",
         title: "8) Orchestration (Swarm & Kubernetes)",
@@ -693,6 +788,14 @@ const groups: Group[] = [
                                 "docker service update --image nginx:alpine web"
                             ]
                         }
+                    },
+                    {
+                        kind: "links",
+                        title: "Swarm",
+                        items: [
+                            { label: "Swarm mode overview", url: "https://docs.docker.com/engine/swarm/" },
+                            { label: "Services & stacks", url: "https://docs.docker.com/engine/swarm/services/" }
+                        ]
                     }
                 ]
             },
@@ -736,6 +839,15 @@ const groups: Group[] = [
                                 "          ports: [{ containerPort: 80 }]"
                             ]
                         }
+                    },
+                    {
+                        kind: "links",
+                        title: "Kubernetes",
+                        items: [
+                            { label: "K8s concepts overview", url: "https://kubernetes.io/docs/concepts/overview/" },
+                            { label: "Deployments", url: "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/" },
+                            { label: "kubectl cheat sheet", url: "https://kubernetes.io/docs/reference/kubectl/cheatsheet/" }
+                        ]
                     }
                 ]
             }
@@ -743,9 +855,6 @@ const groups: Group[] = [
     }
 ];
 
-/* =========================================
-   UI — larger text + comfy margins
-   ========================================= */
 function CodeBlock({ code }: { code: CodeSpec }) {
     const label = code.lang.toUpperCase();
     return (
@@ -906,9 +1015,6 @@ function Sidebar({ onJump }: { onJump: (id: string) => void }) {
     );
 }
 
-/* =========================================
-   Page + Export PNG
-   ========================================= */
 export default function App() {
     const containerRef = useRef<HTMLDivElement>(null);
     const [query, setQuery] = useState("");
@@ -990,7 +1096,6 @@ export default function App() {
                         </section>
                     ))}
                     <footer className="text-xs text-gray-500 mt-10">
-                        Tip: screenshots must live in <code>public/photos/</code> with the exact filenames shown under each image badge.
                     </footer>
                 </main>
             </div>
